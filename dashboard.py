@@ -190,11 +190,21 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Define directories relative to dashboard location
+# Define directories relative to dashboard location (supporting local sibling dirs and streamlit cloud deployment)
 extensions_dir = Path(__file__).resolve().parent.parent
+local_data_dir = Path(__file__).resolve().parent / "data"
+
 bam_dir = extensions_dir / "BAM NPA"
+if not (bam_dir / "BAM NPA.xlsx").exists() and local_data_dir.exists():
+    bam_dir = local_data_dir
+
 baania_dir = extensions_dir / "Baania NPA"
+if not (baania_dir / "baania_listings.xlsx").exists() and local_data_dir.exists():
+    baania_dir = local_data_dir
+
 living_dir = extensions_dir / "Livinginsider NPA"
+if not (living_dir / "Livinginsider NPA.xlsx").exists() and local_data_dir.exists():
+    living_dir = local_data_dir
 
 # Price Formatter helper
 def format_price_thai(val):
@@ -217,6 +227,8 @@ def get_file_mod_time(path: Path):
 @st.cache_data(ttl=600)
 def fetch_bam_metadata():
     meta_file = bam_dir / "metadata.json"
+    if not meta_file.exists() and bam_dir == local_data_dir:
+        meta_file = local_data_dir / "bam_metadata.json"
     if meta_file.exists():
         try:
             with open(meta_file, "r", encoding="utf-8") as f:
