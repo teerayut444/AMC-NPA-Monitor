@@ -25,6 +25,8 @@ if 'df_baania' not in st.session_state:
     st.session_state.df_baania = None
 if 'df_living' not in st.session_state:
     st.session_state.df_living = None
+if 'df_zmyhome' not in st.session_state:
+    st.session_state.df_zmyhome = None
 
 # Load custom styling for premium glassmorphism dark theme
 st.markdown("""
@@ -206,6 +208,10 @@ living_dir = extensions_dir / "Livinginsider NPA"
 if not (living_dir / "Livinginsider NPA.xlsx").exists() and local_data_dir.exists():
     living_dir = local_data_dir
 
+zmyhome_dir = extensions_dir / "ZmyHome NPA"
+if not (zmyhome_dir / "ZmyHome NPA.xlsx").exists() and local_data_dir.exists():
+    zmyhome_dir = local_data_dir
+
 # Price Formatter helper
 def format_price_thai(val):
     if pd.isna(val) or val == 0:
@@ -273,6 +279,25 @@ def fetch_baania_web_count():
     except Exception:
         pass
     return 10000
+
+@st.cache_data(ttl=600)
+def fetch_zmyhome_web_count():
+    url = "https://zmyhome.com/buy"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "th,en-US;q=0.9,en;q=0.8",
+        "Referer": "https://www.google.com/"
+    }
+    try:
+        r = requests.get(url, headers=headers, timeout=8)
+        if r.status_code == 200:
+            match = re.search(r'"numberOfItems":\s*(\d+)', r.text)
+            if match:
+                return int(match.group(1))
+    except Exception:
+        pass
+    return 27368  # Fallback value
 
 # Loader and Cleaner functions with robust caching and session state fallback
 @st.cache_data(ttl=30)
@@ -347,25 +372,55 @@ def load_living_data():
             pass
     return st.session_state.get('df_living', None)
 
+def load_zmyhome_data():
+    path = zmyhome_dir / "ZmyHome NPA.xlsx"
+    df = None
+    try:
+        df = read_excel_file_cached(path, engine='openpyxl')
+    except Exception:
+        try:
+            df = pd.read_excel(path)
+        except Exception:
+            pass
+            
+    if df is not None:
+        try:
+            # Map column 'ประเภท' to 'ประเภททรัพย์'
+            if 'ประเภท' in df.columns:
+                df['ประเภททรัพย์'] = df['ประเภท'].fillna('อื่นๆ').astype(str).str.strip()
+            else:
+                df['ประเภททรัพย์'] = df.get('ประเภททรัพย์', pd.Series('อื่นๆ', index=df.index)).fillna('อื่นๆ').astype(str).str.strip()
+            df['จังหวัด'] = df['จังหวัด'].fillna('ไม่ระบุ').astype(str).str.strip()
+            df['ราคา'] = pd.to_numeric(df['ราคา'], errors='coerce').fillna(0)
+            st.session_state.df_zmyhome = df
+            return df
+        except Exception:
+            pass
+    return st.session_state.get('df_zmyhome', None)
+
 # Load all data
 df_bam = load_bam_data()
 df_baania = load_baania_data()
 df_living = load_living_data()
+df_zmyhome = load_zmyhome_data()
 
 # Fetch totals & metadata
 bam_web_total, bam_last_updated = fetch_bam_metadata()
 living_web_total = fetch_livinginsider_web_count()
 baania_web_total = fetch_baania_web_count()
+zmyhome_web_total = fetch_zmyhome_web_count()
 
 # Scraped Counts
 scraped_bam = len(df_bam) if df_bam is not None else 0
 scraped_baania = len(df_baania) if df_baania is not None else 0
 scraped_living = len(df_living) if df_living is not None else 0
+scraped_zmyhome = len(df_zmyhome) if df_zmyhome is not None else 0
 
 # Total Scraped Values
 bam_total_value = df_bam['ราคา'].sum() if df_bam is not None else 0
 baania_total_value = df_baania['ราคาเริ่มต้น'].sum() if df_baania is not None else 0
 living_total_value = df_living['ราคา'].sum() if df_living is not None else 0
+zmyhome_total_value = df_zmyhome['ราคา'].sum() if df_zmyhome is not None else 0
 
 # Percentages
 # BAM
@@ -374,6 +429,8 @@ pct_bam = (scraped_bam / bam_web_total * 100) if bam_web_total > 0 else 0
 pct_baania = 100.0 if scraped_baania >= baania_web_total else (scraped_baania / baania_web_total * 100)
 # Livinginsider
 pct_living = (scraped_living / living_web_total * 100) if living_web_total > 0 else 0
+# ZmyHome
+pct_zmyhome = (scraped_zmyhome / zmyhome_web_total * 100) if zmyhome_web_total > 0 else 0
 
 # Baania web count display description
 baania_total_desc = f"{baania_web_total:,}+" if baania_web_total == 10000 else f"{baania_web_total:,}"
@@ -382,6 +439,7 @@ baania_total_desc = f"{baania_web_total:,}+" if baania_web_total == 10000 else f
 file_time_bam = get_file_mod_time(bam_dir / "BAM NPA.xlsx")
 file_time_baania = get_file_mod_time(baania_dir / "baania_listings.xlsx")
 file_time_living = get_file_mod_time(living_dir / "Livinginsider NPA.xlsx")
+file_time_zmyhome = get_file_mod_time(zmyhome_dir / "ZmyHome NPA.xlsx")
 
 
 # ----------------- SIDEBAR NAVIGATION -----------------
@@ -525,7 +583,7 @@ if selected_page == "🔮 แผนภาพวงกลม NPA ภาพรว�
 
     # Construct SVG content
     svg_content = f"""
-    <svg viewBox="0 0 1000 580" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background-color: transparent;">
+    <svg viewBox="0 0 1000 620" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background-color: transparent;">
       <defs>
         <!-- Drop Shadow Filter for Light Mode (Soft shadow) -->
         <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
@@ -539,45 +597,58 @@ if selected_page == "🔮 แผนภาพวงกลม NPA ภาพรว�
         </linearGradient>
         
         <!-- BAM Radial Gradients (Bright Gold/Orange) -->
-        <radialGradient id="bam-scraped" cx="240" cy="160" r="145" fx="200" fy="120" gradientUnits="userSpaceOnUse">
+        <radialGradient id="bam-scraped" cx="260" cy="160" r="135" fx="220" fy="120" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#fffebd"/>
           <stop offset="50%" stop-color="#ffa726"/>
           <stop offset="100%" stop-color="#f57c00"/>
         </radialGradient>
-        <radialGradient id="bam-unscraped" cx="240" cy="160" r="145" fx="200" fy="120" gradientUnits="userSpaceOnUse">
+        <radialGradient id="bam-unscraped" cx="260" cy="160" r="135" fx="220" fy="120" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#fffefb"/>
           <stop offset="70%" stop-color="#ffeed6"/>
           <stop offset="100%" stop-color="#ffe0b2"/>
         </radialGradient>
         
         <!-- Baania Radial Gradients (Bright Green) -->
-        <radialGradient id="baania-scraped" cx="760" cy="160" r="140" fx="720" fy="120" gradientUnits="userSpaceOnUse">
+        <radialGradient id="baania-scraped" cx="740" cy="160" r="130" fx="700" fy="120" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#f1fdf5"/>
           <stop offset="50%" stop-color="#66bb6a"/>
           <stop offset="100%" stop-color="#388e3c"/>
         </radialGradient>
-        <radialGradient id="baania-unscraped" cx="760" cy="160" r="140" fx="720" fy="120" gradientUnits="userSpaceOnUse">
+        <radialGradient id="baania-unscraped" cx="740" cy="160" r="130" fx="700" fy="120" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#fafdfb"/>
           <stop offset="70%" stop-color="#e8f5e9"/>
           <stop offset="100%" stop-color="#c8e6c9"/>
         </radialGradient>
         
         <!-- LivingInsider Radial Gradients (Bright Red) -->
-        <radialGradient id="living-scraped" cx="500" cy="360" r="175" fx="450" fy="310" gradientUnits="userSpaceOnUse">
+        <radialGradient id="living-scraped" cx="360" cy="430" r="160" fx="310" fy="380" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#fff5f5"/>
           <stop offset="50%" stop-color="#ef5350"/>
           <stop offset="100%" stop-color="#d32f2f"/>
         </radialGradient>
-        <radialGradient id="living-unscraped" cx="500" cy="360" r="175" fx="450" fy="310" gradientUnits="userSpaceOnUse">
+        <radialGradient id="living-unscraped" cx="360" cy="430" r="160" fx="310" fy="380" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#fffbfa"/>
           <stop offset="70%" stop-color="#ffe4e6"/>
           <stop offset="100%" stop-color="#ffcdd2"/>
         </radialGradient>
+
+        <!-- ZmyHome Radial Gradients (Bright Orange) -->
+        <radialGradient id="zmyhome-scraped" cx="640" cy="430" r="145" fx="600" fy="380" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#fff1e0"/>
+          <stop offset="50%" stop-color="#ff9800"/>
+          <stop offset="100%" stop-color="#e65100"/>
+        </radialGradient>
+        <radialGradient id="zmyhome-unscraped" cx="640" cy="430" r="145" fx="600" fy="380" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#fffbf5"/>
+          <stop offset="70%" stop-color="#ffe0b2"/>
+          <stop offset="100%" stop-color="#ffd180"/>
+        </radialGradient>
       </defs>
       
-      {generate_bubble_markup(240, 160, 145, "BAM NPA", f"{bam_web_total:,}", scraped_bam, pct_bam, format_price_thai(bam_total_value), "bam-scraped", "bam-unscraped", "bubble-bam")}
-      {generate_bubble_markup(760, 160, 140, "Baania NPA", baania_total_desc, scraped_baania, pct_baania, format_price_thai(baania_total_value), "baania-scraped", "baania-unscraped", "bubble-baania")}
-      {generate_bubble_markup(500, 360, 175, "LivingInsider NPA", f"{living_web_total:,}", scraped_living, pct_living, format_price_thai(living_total_value), "living-scraped", "living-unscraped", "bubble-living")}
+      {generate_bubble_markup(260, 160, 135, "BAM NPA", f"{bam_web_total:,}", scraped_bam, pct_bam, format_price_thai(bam_total_value), "bam-scraped", "bam-unscraped", "bubble-bam")}
+      {generate_bubble_markup(740, 160, 130, "Baania NPA", baania_total_desc, scraped_baania, pct_baania, format_price_thai(baania_total_value), "baania-scraped", "baania-unscraped", "bubble-baania")}
+      {generate_bubble_markup(360, 430, 160, "LivingInsider NPA", f"{living_web_total:,}", scraped_living, pct_living, format_price_thai(living_total_value), "living-scraped", "living-unscraped", "bubble-living")}
+      {generate_bubble_markup(640, 430, 145, "ZmyHome NPA", f"{zmyhome_web_total:,}", scraped_zmyhome, pct_zmyhome, format_price_thai(zmyhome_total_value), "zmyhome-scraped", "zmyhome-unscraped", "bubble-zmyhome")}
     </svg>
     """
 
@@ -616,9 +687,10 @@ if selected_page == "🔮 แผนภาพวงกลม NPA ภาพรว�
             transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
             cursor: pointer;
         }}
-        #bubble-bam {{ transform-origin: 240px 160px; }}
-        #bubble-baania {{ transform-origin: 760px 160px; }}
-        #bubble-living {{ transform-origin: 500px 360px; }}
+        #bubble-bam {{ transform-origin: 260px 160px; }}
+        #bubble-baania {{ transform-origin: 740px 160px; }}
+        #bubble-living {{ transform-origin: 360px 430px; }}
+        #bubble-zmyhome {{ transform-origin: 640px 430px; }}
         
         .bubble-group:hover {{
             transform: scale(1.05);
@@ -646,6 +718,11 @@ if selected_page == "🔮 แผนภาพวงกลม NPA ภาพรว�
             50% {{ transform: translate(3px, -9px); }}
             100% {{ transform: translate(0px, 0px); }}
         }}
+        @keyframes float-zmyhome-anim {{
+            0% {{ transform: translate(0px, 0px); }}
+            50% {{ transform: translate(-4px, -8px); }}
+            100% {{ transform: translate(0px, 0px); }}
+        }}
 
         /* Floating classes applied to wrappers */
         .float-bubble-bam {{
@@ -656,6 +733,9 @@ if selected_page == "🔮 แผนภาพวงกลม NPA ภาพรว�
         }}
         .float-bubble-living {{
             animation: float-living-anim 8s ease-in-out infinite;
+        }}
+        .float-bubble-zmyhome {{
+            animation: float-zmyhome-anim 6.5s ease-in-out infinite;
         }}
     </style>
     </head>
@@ -668,7 +748,7 @@ if selected_page == "🔮 แผนภาพวงกลม NPA ภาพรว�
     """
     
     import streamlit.components.v1 as components
-    components.html(html_content, height=560)
+    components.html(html_content, height=600)
 
 
 # ----------------- PAGE 2: SCRAPING SUCCESS AND PROGRESS METRICS -----------------
@@ -681,7 +761,7 @@ elif selected_page == "📊 สรุปความสำเร็จการ�
     """, unsafe_allow_html=True)
     
     # ----------------- KPI CARDS GRID -----------------
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
         st.markdown(f"""
@@ -722,15 +802,31 @@ elif selected_page == "📊 สรุปความสำเร็จการ�
                 <div class="kpi-value">{scraped_living:,} / {living_web_total:,}</div>
             </div>
             <div>
-                <div class="kpi-pct" style="color: #f59e0b;">{pct_living:.2f}% Scraped</div>
+                <div class="kpi-pct" style="color: #ef4444;">{pct_living:.2f}% Scraped</div>
                 <div class="kpi-time">ไฟล์อัปเดต: {file_time_living}</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
     with col4:
-        total_scraped = scraped_bam + scraped_baania + scraped_living
-        overall_pct = ((scraped_bam + scraped_baania + scraped_living) / (bam_web_total + baania_web_total + living_web_total) * 100)
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-icon">🏠</div>
+                <div class="kpi-company">ZmyHome NPA</div>
+                <div class="kpi-value">{scraped_zmyhome:,} / {zmyhome_web_total:,}</div>
+            </div>
+            <div>
+                <div class="kpi-pct" style="color: #f97316;">{pct_zmyhome:.2f}% Scraped</div>
+                <div class="kpi-time">ไฟล์อัปเดต: {file_time_zmyhome}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col5:
+        total_scraped = scraped_bam + scraped_baania + scraped_living + scraped_zmyhome
+        total_web = bam_web_total + baania_web_total + living_web_total + zmyhome_web_total
+        overall_pct = (total_scraped / total_web * 100) if total_web > 0 else 0
         st.markdown(f"""
         <div class="kpi-card" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, #111827 100%); border-color: #6366f1;">
             <div>
@@ -754,13 +850,14 @@ elif selected_page == "📊 สรุปความสำเร็จการ�
     customdata_treemap = [
         [scraped_living, pct_living, format_price_thai(living_total_value)],
         [scraped_bam, pct_bam, format_price_thai(bam_total_value)],
-        [scraped_baania, pct_baania, format_price_thai(baania_total_value)]
+        [scraped_baania, pct_baania, format_price_thai(baania_total_value)],
+        [scraped_zmyhome, pct_zmyhome, format_price_thai(zmyhome_total_value)]
     ]
 
     fig_treemap = go.Figure(go.Treemap(
-        labels=["LivingInsider NPA", "BAM NPA", "Baania NPA"],
-        parents=["", "", ""],
-        values=[living_web_total, bam_web_total, baania_web_total], # sizes match web totals
+        labels=["LivingInsider NPA", "BAM NPA", "Baania NPA", "ZmyHome NPA"],
+        parents=["", "", "", ""],
+        values=[living_web_total, bam_web_total, baania_web_total, zmyhome_web_total], # sizes match web totals
         texttemplate=(
             "<span style='font-size: 1.5rem; font-weight: bold;'>%{label}</span><br><br>"
             "<span style='font-size: 1.05rem;'>"
@@ -772,9 +869,10 @@ elif selected_page == "📊 สรุปความสำเร็จการ�
         customdata=customdata_treemap,
         marker=dict(
             colors=[
-                "#ef4444",  # LivingInsider (0.16%) - Red
-                "#f59e0b" if pct_bam < 60 else "#84cc16",  # BAM (52.15%) - Amber
-                "#10b981"   # Baania (100.00%) - Emerald Green
+                "#ef4444",  # LivingInsider (Red)
+                "#f59e0b" if pct_bam < 60 else "#84cc16",  # BAM
+                "#10b981",  # Baania
+                "#f97316" if pct_zmyhome < 60 else "#10b981"  # ZmyHome
             ],
             line=dict(width=2, color="#090d16")
         ),
@@ -823,6 +921,15 @@ elif selected_page == "📊 สรุปความสำเร็จการ�
     else:
         living_min, living_max, living_avg, living_types = 0, 0, 0, "-"
 
+    # ZmyHome
+    if df_zmyhome is not None and not df_zmyhome.empty:
+        zmyhome_min = df_zmyhome['ราคา'].replace(0, np.nan).min()
+        zmyhome_max = df_zmyhome['ราคา'].max()
+        zmyhome_avg = df_zmyhome['ราคา'].replace(0, np.nan).mean()
+        zmyhome_types = ", ".join(df_zmyhome['ประเภททรัพย์'].value_counts().index[:3])
+    else:
+        zmyhome_min, zmyhome_max, zmyhome_avg, zmyhome_types = 0, 0, 0, "-"
+
     summary_rows = [
         {
             "บริษัท / แหล่งข้อมูล": "BAM (บสก.)",
@@ -853,6 +960,16 @@ elif selected_page == "📊 สรุปความสำเร็จการ�
             "ช่วงราคาเริ่มต้น": f"{format_price_thai(living_min)} - {format_price_thai(living_max)}",
             "ประเภททรัพย์หลัก": living_types,
             "วันที่ปรับปรุงไฟล์": file_time_living
+        },
+        {
+            "บริษัท / แหล่งข้อมูล": "ZmyHome (ซีมายโฮม)",
+            "จำนวนดึงสำเร็จ": f"{scraped_zmyhome:,} รายการ",
+            "ประกาศจริงบนเว็บ": f"{zmyhome_web_total:,} รายการ",
+            "ร้อยละการ Scrap": f"{pct_zmyhome:.2f}%",
+            "ราคาเฉลี่ย": format_price_thai(zmyhome_avg),
+            "ช่วงราคาเริ่มต้น": f"{format_price_thai(zmyhome_min)} - {format_price_thai(zmyhome_max)}",
+            "ประเภททรัพย์หลัก": zmyhome_types,
+            "วันที่ปรับปรุงไฟล์": file_time_zmyhome
         }
     ]
 
@@ -877,7 +994,7 @@ elif selected_page == "🔍 เจาะลึกข้อมูลรายบ�
     st.markdown('<div class="summary-section">', unsafe_allow_html=True)
     
     # Select company tab
-    selected_tab = st.radio("เลือกดูภาพรวมข้อมูลรายบริษัท:", ["BAM NPA", "Baania NPA", "LivingInsider NPA"], horizontal=True)
+    selected_tab = st.radio("เลือกดูภาพรวมข้อมูลรายบริษัท:", ["BAM NPA", "Baania NPA", "LivingInsider NPA", "ZmyHome NPA"], horizontal=True)
 
     if selected_tab == "BAM NPA":
         if df_bam is not None and not df_bam.empty:
@@ -989,5 +1106,42 @@ elif selected_page == "🔍 เจาะลึกข้อมูลรายบ�
                 st.plotly_chart(fig_liv_prov, use_container_width=True)
         else:
             st.warning("ไม่มีข้อมูล LivingInsider NPA ให้แสดง")
+            
+    elif selected_tab == "ZmyHome NPA":
+        if df_zmyhome is not None and not df_zmyhome.empty:
+            col_type, col_prov = st.columns(2)
+            
+            with col_type:
+                # Type distribution
+                type_counts = df_zmyhome['ประเภททรัพย์'].value_counts().reset_index()
+                type_counts.columns = ['ประเภททรัพย์', 'จำนวน']
+                fig_zmy_type = px.bar(
+                    type_counts.head(10),
+                    y='ประเภททรัพย์',
+                    x='จำนวน',
+                    orientation='h',
+                    title="ประเภททรัพย์สินที่มีในระบบ (Top 10)",
+                    color='จำนวน',
+                    color_continuous_scale='Oranges'
+                )
+                fig_zmy_type.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#888888'), height=300)
+                st.plotly_chart(fig_zmy_type, use_container_width=True)
+                
+            with col_prov:
+                # Province distribution
+                prov_counts = df_zmyhome['จังหวัด'].value_counts().reset_index()
+                prov_counts.columns = ['จังหวัด', 'จำนวน']
+                fig_zmy_prov = px.bar(
+                    prov_counts.head(10),
+                    x='จังหวัด',
+                    y='จำนวน',
+                    title="จังหวัดที่มีการดึงประกาศสูงสุด (Top 10)",
+                    color='จำนวน',
+                    color_continuous_scale='YlOrBr'
+                )
+                fig_zmy_prov.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#888888'), height=300)
+                st.plotly_chart(fig_zmy_prov, use_container_width=True)
+        else:
+            st.warning("ไม่มีข้อมูล ZmyHome NPA ให้แสดง")
             
     st.markdown('</div>', unsafe_allow_html=True)
