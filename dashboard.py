@@ -471,9 +471,14 @@ if selected_page == "🔮 แผนภาพวงกลม NPA ภาพรว�
         highlight = f'<ellipse cx="{hcx}" cy="{hcy}" rx="{hrx}" ry="{hry}" fill="url(#highlight-grad)" transform="rotate(-30, {hcx}, {hcy})" />'
         
         title_size = int(r * 0.12)
-        text_size = int(r * 0.09)
-        if title_size < 15: title_size = 15
-        if text_size < 12: text_size = 12
+        text_size = int(r * 0.085)
+        if title_size < 16: title_size = 16
+        if text_size < 11: text_size = 11
+        
+        # Calculate badge padding and styling dynamically based on size
+        badge_padding = "4px 12px" if r > 150 else "3px 10px"
+        badge_gap = "6px" if r > 150 else "4px"
+        margin_bottom = "6px" if r > 150 else "4px"
         
         return f"""
         <g class="float-wrapper float-{bubble_id}">
@@ -482,11 +487,29 @@ if selected_page == "🔮 แผนภาพวงกลม NPA ภาพรว�
                 {sheen}
                 {highlight}
                 <foreignObject x="{cx - r}" y="{cy - r}" width="{2*r}" height="{2*r}">
-                    <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; font-family: 'Outfit', 'Sarabun', sans-serif; pointer-events: none; box-sizing: border-box; padding: 10px; line-height: 1.35; will-change: transform; transform: translate3d(0,0,0);">
-                        <div style="font-weight: 700; font-size: {title_size}px; color: #0f172a; margin-bottom: 5px;">{name}</div>
-                        <div style="font-size: {text_size}px; color: #334155; margin-bottom: 3px;">📢 บนเว็บ: <span style="font-weight: 600;">{total_desc}</span></div>
-                        <div style="font-size: {text_size}px; color: #334155; margin-bottom: 3px;">📥 ดึงสำเร็จ: <span style="font-weight: 600;">{scraped:,} ({pct:.2f}%)</span></div>
-                        <div style="font-size: {text_size}px; color: #334155;">💰 มูลค่ารวม: <span style="font-weight: 600;">{value}</span></div>
+                    <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; font-family: 'Outfit', 'Sarabun', sans-serif; pointer-events: none; box-sizing: border-box; padding: 12px; line-height: 1.4; will-change: transform; transform: translate3d(0,0,0);">
+                        <!-- Title -->
+                        <div style="font-weight: 800; font-size: {title_size}px; color: #0f172a; letter-spacing: -0.3px; margin-bottom: 8px; text-transform: uppercase;">
+                            {name}
+                        </div>
+                        
+                        <!-- Stats: บนเว็บ -->
+                        <div style="background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(4px); border-radius: 20px; padding: {badge_padding}; display: inline-flex; align-items: center; gap: {badge_gap}; margin-bottom: {margin_bottom}; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 2px 5px rgba(15, 23, 42, 0.04);">
+                            <span style="font-size: {text_size - 1.5}px; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">บนเว็บ</span>
+                            <span style="font-size: {text_size}px; color: #0f172a; font-weight: 800;">{total_desc}</span>
+                        </div>
+                        
+                        <!-- Stats: ดึงสำเร็จ -->
+                        <div style="background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(4px); border-radius: 20px; padding: {badge_padding}; display: inline-flex; align-items: center; gap: {badge_gap}; margin-bottom: {margin_bottom}; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 2px 5px rgba(15, 23, 42, 0.04);">
+                            <span style="font-size: {text_size - 1.5}px; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">ดึงสำเร็จ</span>
+                            <span style="font-size: {text_size}px; color: #0f172a; font-weight: 800;">{scraped:,} <span style="color: #4f46e5; font-size: {text_size - 1}px; font-weight: 700;">({pct:.1f}%)</span></span>
+                        </div>
+                        
+                        <!-- Stats: มูลค่ารวม -->
+                        <div style="background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(4px); border-radius: 20px; padding: {badge_padding}; display: inline-flex; align-items: center; gap: {badge_gap}; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 2px 5px rgba(15, 23, 42, 0.04);">
+                            <span style="font-size: {text_size - 1.5}px; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">มูลค่ารวม</span>
+                            <span style="font-size: {text_size}px; color: #0f172a; font-weight: 800;">{value}</span>
+                        </div>
                     </div>
                 </foreignObject>
             </g>
