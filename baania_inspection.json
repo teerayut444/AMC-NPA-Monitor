@@ -1,0 +1,28 @@
+{
+  "hits_keys": [
+    "total",
+    "max_score",
+    "hits"
+  ],
+  "total": {
+    "value": 10000,
+    "relation": "gte"
+  },
+  "max_score": null,
+  "num_hits": 48,
+  "pageProps_keys": [
+    "defaultData",
+    "seoData",
+    "adsData",
+    "generateId"
+  ],
+  "defaultData_keys": [
+    "took",
+    "timed_out",
+    "_shards",
+    "hits",
+    "polygon",
+    "canonical",
+    "province"
+  ]
+}

@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.streamlit/secrets.toml
+github_config.json
+github_credentials.json
+.agents/
+.gemini/
+test_donut_pack.html
+test_glossy_bubbles.html
