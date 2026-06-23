@@ -597,58 +597,58 @@ if selected_page == "🔮 แผนภาพวงกลม NPA ภาพรว�
         </linearGradient>
         
         <!-- BAM Radial Gradients (Bright Gold/Orange) -->
-        <radialGradient id="bam-scraped" cx="260" cy="160" r="135" fx="220" fy="120" gradientUnits="userSpaceOnUse">
+        <radialGradient id="bam-scraped" cx="655" cy="190" r="85" fx="620" fy="150" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#fffebd"/>
           <stop offset="50%" stop-color="#ffa726"/>
           <stop offset="100%" stop-color="#f57c00"/>
         </radialGradient>
-        <radialGradient id="bam-unscraped" cx="260" cy="160" r="135" fx="220" fy="120" gradientUnits="userSpaceOnUse">
+        <radialGradient id="bam-unscraped" cx="655" cy="190" r="85" fx="620" fy="150" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#fffefb"/>
           <stop offset="70%" stop-color="#ffeed6"/>
           <stop offset="100%" stop-color="#ffe0b2"/>
         </radialGradient>
         
         <!-- Baania Radial Gradients (Bright Green) -->
-        <radialGradient id="baania-scraped" cx="740" cy="160" r="130" fx="700" fy="120" gradientUnits="userSpaceOnUse">
+        <radialGradient id="baania-scraped" cx="805" cy="180" r="65" fx="775" fy="145" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#f1fdf5"/>
           <stop offset="50%" stop-color="#66bb6a"/>
           <stop offset="100%" stop-color="#388e3c"/>
         </radialGradient>
-        <radialGradient id="baania-unscraped" cx="740" cy="160" r="130" fx="700" fy="120" gradientUnits="userSpaceOnUse">
+        <radialGradient id="baania-unscraped" cx="805" cy="180" r="65" fx="775" fy="145" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#fafdfb"/>
           <stop offset="70%" stop-color="#e8f5e9"/>
           <stop offset="100%" stop-color="#c8e6c9"/>
         </radialGradient>
         
         <!-- LivingInsider Radial Gradients (Bright Red) -->
-        <radialGradient id="living-scraped" cx="360" cy="430" r="160" fx="310" fy="380" gradientUnits="userSpaceOnUse">
+        <radialGradient id="living-scraped" cx="345" cy="300" r="215" fx="290" fy="240" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#fff5f5"/>
           <stop offset="50%" stop-color="#ef5350"/>
           <stop offset="100%" stop-color="#d32f2f"/>
         </radialGradient>
-        <radialGradient id="living-unscraped" cx="360" cy="430" r="160" fx="310" fy="380" gradientUnits="userSpaceOnUse">
+        <radialGradient id="living-unscraped" cx="345" cy="300" r="215" fx="290" fy="240" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#fffbfa"/>
           <stop offset="70%" stop-color="#ffe4e6"/>
           <stop offset="100%" stop-color="#ffcdd2"/>
         </radialGradient>
 
         <!-- ZmyHome Radial Gradients (Bright Orange) -->
-        <radialGradient id="zmyhome-scraped" cx="640" cy="430" r="145" fx="600" fy="380" gradientUnits="userSpaceOnUse">
+        <radialGradient id="zmyhome-scraped" cx="675" cy="400" r="110" fx="640" fy="350" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#fff1e0"/>
           <stop offset="50%" stop-color="#ff9800"/>
           <stop offset="100%" stop-color="#e65100"/>
         </radialGradient>
-        <radialGradient id="zmyhome-unscraped" cx="640" cy="430" r="145" fx="600" fy="380" gradientUnits="userSpaceOnUse">
+        <radialGradient id="zmyhome-unscraped" cx="675" cy="400" r="110" fx="640" fy="350" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#fffbf5"/>
           <stop offset="70%" stop-color="#ffe0b2"/>
           <stop offset="100%" stop-color="#ffd180"/>
         </radialGradient>
       </defs>
       
-      {generate_bubble_markup(260, 160, 135, "BAM NPA", f"{bam_web_total:,}", scraped_bam, pct_bam, format_price_thai(bam_total_value), "bam-scraped", "bam-unscraped", "bubble-bam")}
-      {generate_bubble_markup(740, 160, 130, "Baania NPA", baania_total_desc, scraped_baania, pct_baania, format_price_thai(baania_total_value), "baania-scraped", "baania-unscraped", "bubble-baania")}
-      {generate_bubble_markup(360, 430, 160, "LivingInsider NPA", f"{living_web_total:,}", scraped_living, pct_living, format_price_thai(living_total_value), "living-scraped", "living-unscraped", "bubble-living")}
-      {generate_bubble_markup(640, 430, 145, "ZmyHome NPA", f"{zmyhome_web_total:,}", scraped_zmyhome, pct_zmyhome, format_price_thai(zmyhome_total_value), "zmyhome-scraped", "zmyhome-unscraped", "bubble-zmyhome")}
+      {generate_bubble_markup(655, 190, 85, "BAM NPA", f"{bam_web_total:,}", scraped_bam, pct_bam, format_price_thai(bam_total_value), "bam-scraped", "bam-unscraped", "bubble-bam")}
+      {generate_bubble_markup(805, 180, 65, "Baania NPA", baania_total_desc, scraped_baania, pct_baania, format_price_thai(baania_total_value), "baania-scraped", "baania-unscraped", "bubble-baania")}
+      {generate_bubble_markup(345, 300, 215, "LivingInsider NPA", f"{living_web_total:,}", scraped_living, pct_living, format_price_thai(living_total_value), "living-scraped", "living-unscraped", "bubble-living")}
+      {generate_bubble_markup(675, 400, 110, "ZmyHome NPA", f"{zmyhome_web_total:,}", scraped_zmyhome, pct_zmyhome, format_price_thai(zmyhome_total_value), "zmyhome-scraped", "zmyhome-unscraped", "bubble-zmyhome")}
     </svg>
     """
 
@@ -687,10 +687,10 @@ if selected_page == "🔮 แผนภาพวงกลม NPA ภาพรว�
             transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
             cursor: pointer;
         }}
-        #bubble-bam {{ transform-origin: 260px 160px; }}
-        #bubble-baania {{ transform-origin: 740px 160px; }}
-        #bubble-living {{ transform-origin: 360px 430px; }}
-        #bubble-zmyhome {{ transform-origin: 640px 430px; }}
+        #bubble-bam {{ transform-origin: 655px 190px; }}
+        #bubble-baania {{ transform-origin: 805px 180px; }}
+        #bubble-living {{ transform-origin: 345px 300px; }}
+        #bubble-zmyhome {{ transform-origin: 675px 400px; }}
         
         .bubble-group:hover {{
             transform: scale(1.05);
