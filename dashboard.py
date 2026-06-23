@@ -598,7 +598,44 @@ if selected_page == "🔮 แผนภาพวงกลม NPA ภาพรว�
     </div>
     """, unsafe_allow_html=True)
 
-    # 1. Helper function for generating SVG slices
+    # 1. Option Radio Selector for Metric
+    col_sel1, col_sel2, col_sel3 = st.columns([1.2, 2.0, 1.2])
+    with col_sel2:
+        st.markdown("""
+        <div style="text-align: center; margin-top: -15px; margin-bottom: 5px; font-family: 'Outfit', 'Sarabun', sans-serif;">
+            <p style="font-size: 0.85rem; font-weight: 600; color: #475569; margin: 0 0 4px 0;">เลือกเกณฑ์สัดส่วนการแสดงผลแผนภาพ:</p>
+        </div>
+        """, unsafe_allow_html=True)
+        bubble_metric = st.radio(
+            "เลือกเกณฑ์สัดส่วนการแสดงผลแผนภาพ:",
+            ["สัดส่วนตามจำนวนทรัพย์สิน (Asset Count)", "สัดส่วนตามมูลค่ารวมของทรัพย์สิน (Total Value)"],
+            index=0,
+            horizontal=True,
+            label_visibility="collapsed"
+        )
+
+    # Calculate config dynamically based on selected metric
+    if bubble_metric == "สัดส่วนตามจำนวนทรัพย์สิน (Asset Count)":
+        config = {
+            "BAM":           {"cx": 820, "cy": 200, "r": 99},
+            "Baania":        {"cx": 810, "cy": 410, "r": 77},
+            "LivingInsider": {"cx": 500, "cy": 310, "r": 250},
+            "ZmyHome":       {"cx": 150, "cy": 310, "r": 127}
+        }
+    else: # มูลค่ารวม (Total Value)
+        config = {
+            "BAM":           {"cx": 820, "cy": 180, "r": 95},
+            "Baania":        {"cx": 840, "cy": 450, "r": 183},
+            "LivingInsider": {"cx": 500, "cy": 310, "r": 250},
+            "ZmyHome":       {"cx": 160, "cy": 310, "r": 112}
+        }
+
+    bam_conf = config["BAM"]
+    baa_conf = config["Baania"]
+    liv_conf = config["LivingInsider"]
+    zmy_conf = config["ZmyHome"]
+
+    # Helper function for generating SVG slices
     import math
     def get_pie_slice_path(cx, cy, r, start_pct, end_pct):
         if end_pct - start_pct >= 0.9999:
@@ -712,58 +749,58 @@ if selected_page == "🔮 แผนภาพวงกลม NPA ภาพรว�
         </linearGradient>
         
         <!-- BAM Radial Gradients (Bright Gold/Orange) -->
-        <radialGradient id="bam-scraped" cx="820" cy="200" r="99" fx="785" fy="160" gradientUnits="userSpaceOnUse">
+        <radialGradient id="bam-scraped" cx="50%" cy="50%" r="50%" fx="35%" fy="30%">
           <stop offset="0%" stop-color="#fffebd"/>
           <stop offset="50%" stop-color="#ffa726"/>
           <stop offset="100%" stop-color="#f57c00"/>
         </radialGradient>
-        <radialGradient id="bam-unscraped" cx="820" cy="200" r="99" fx="785" fy="160" gradientUnits="userSpaceOnUse">
+        <radialGradient id="bam-unscraped" cx="50%" cy="50%" r="50%" fx="35%" fy="30%">
           <stop offset="0%" stop-color="#fffefb"/>
           <stop offset="70%" stop-color="#ffeed6"/>
           <stop offset="100%" stop-color="#ffe0b2"/>
         </radialGradient>
         
         <!-- Baania Radial Gradients (Bright Green) -->
-        <radialGradient id="baania-scraped" cx="810" cy="410" r="77" fx="780" fy="370" gradientUnits="userSpaceOnUse">
+        <radialGradient id="baania-scraped" cx="50%" cy="50%" r="50%" fx="35%" fy="30%">
           <stop offset="0%" stop-color="#f1fdf5"/>
           <stop offset="50%" stop-color="#66bb6a"/>
           <stop offset="100%" stop-color="#388e3c"/>
         </radialGradient>
-        <radialGradient id="baania-unscraped" cx="810" cy="410" r="77" fx="780" fy="370" gradientUnits="userSpaceOnUse">
+        <radialGradient id="baania-unscraped" cx="50%" cy="50%" r="50%" fx="35%" fy="30%">
           <stop offset="0%" stop-color="#fafdfb"/>
           <stop offset="70%" stop-color="#e8f5e9"/>
           <stop offset="100%" stop-color="#c8e6c9"/>
         </radialGradient>
         
         <!-- LivingInsider Radial Gradients (Bright Red) -->
-        <radialGradient id="living-scraped" cx="500" cy="310" r="250" fx="440" fy="240" gradientUnits="userSpaceOnUse">
+        <radialGradient id="living-scraped" cx="50%" cy="50%" r="50%" fx="38%" fy="35%">
           <stop offset="0%" stop-color="#fff5f5"/>
           <stop offset="50%" stop-color="#ef5350"/>
           <stop offset="100%" stop-color="#d32f2f"/>
         </radialGradient>
-        <radialGradient id="living-unscraped" cx="500" cy="310" r="250" fx="440" fy="240" gradientUnits="userSpaceOnUse">
+        <radialGradient id="living-unscraped" cx="50%" cy="50%" r="50%" fx="38%" fy="35%">
           <stop offset="0%" stop-color="#fffbfa"/>
           <stop offset="70%" stop-color="#ffe4e6"/>
           <stop offset="100%" stop-color="#ffcdd2"/>
         </radialGradient>
 
         <!-- ZmyHome Radial Gradients (Bright Orange) -->
-        <radialGradient id="zmyhome-scraped" cx="150" cy="310" r="127" fx="120" fy="270" gradientUnits="userSpaceOnUse">
+        <radialGradient id="zmyhome-scraped" cx="50%" cy="50%" r="50%" fx="38%" fy="35%">
           <stop offset="0%" stop-color="#fff1e0"/>
           <stop offset="50%" stop-color="#ff9800"/>
           <stop offset="100%" stop-color="#e65100"/>
         </radialGradient>
-        <radialGradient id="zmyhome-unscraped" cx="150" cy="310" r="127" fx="120" fy="270" gradientUnits="userSpaceOnUse">
+        <radialGradient id="zmyhome-unscraped" cx="50%" cy="50%" r="50%" fx="38%" fy="35%">
           <stop offset="0%" stop-color="#fffbf5"/>
           <stop offset="70%" stop-color="#ffe0b2"/>
           <stop offset="100%" stop-color="#ffd180"/>
         </radialGradient>
       </defs>
       
-      {generate_bubble_markup(820, 200, 99, "BAM NPA", f"{bam_web_total:,}", scraped_bam, pct_bam, format_price_thai(bam_total_value), "bam-scraped", "bam-unscraped", "bubble-bam")}
-      {generate_bubble_markup(810, 410, 77, "Baania NPA", baania_total_desc, scraped_baania, pct_baania, format_price_thai(baania_total_value), "baania-scraped", "baania-unscraped", "bubble-baania")}
-      {generate_bubble_markup(500, 310, 250, "LivingInsider NPA", f"{living_web_total:,}", scraped_living, pct_living, format_price_thai(living_total_value), "living-scraped", "living-unscraped", "bubble-living")}
-      {generate_bubble_markup(150, 310, 127, "ZmyHome NPA", f"{zmyhome_web_total:,}", scraped_zmyhome, pct_zmyhome, format_price_thai(zmyhome_total_value), "zmyhome-scraped", "zmyhome-unscraped", "bubble-zmyhome")}
+      {generate_bubble_markup(bam_conf['cx'], bam_conf['cy'], bam_conf['r'], "BAM NPA", f"{bam_web_total:,}", scraped_bam, pct_bam, format_price_thai(bam_total_value), "bam-scraped", "bam-unscraped", "bubble-bam")}
+      {generate_bubble_markup(baa_conf['cx'], baa_conf['cy'], baa_conf['r'], "Baania NPA", baania_total_desc, scraped_baania, pct_baania, format_price_thai(baania_total_value), "baania-scraped", "baania-unscraped", "bubble-baania")}
+      {generate_bubble_markup(liv_conf['cx'], liv_conf['cy'], liv_conf['r'], "LivingInsider NPA", f"{living_web_total:,}", scraped_living, pct_living, format_price_thai(living_total_value), "living-scraped", "living-unscraped", "bubble-living")}
+      {generate_bubble_markup(zmy_conf['cx'], zmy_conf['cy'], zmy_conf['r'], "ZmyHome NPA", f"{zmyhome_web_total:,}", scraped_zmyhome, pct_zmyhome, format_price_thai(zmyhome_total_value), "zmyhome-scraped", "zmyhome-unscraped", "bubble-zmyhome")}
     </svg>
     """
 
@@ -802,10 +839,10 @@ if selected_page == "🔮 แผนภาพวงกลม NPA ภาพรว�
             transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
             cursor: pointer;
         }}
-        #bubble-bam {{ transform-origin: 820px 200px; }}
-        #bubble-baania {{ transform-origin: 810px 410px; }}
-        #bubble-living {{ transform-origin: 500px 310px; }}
-        #bubble-zmyhome {{ transform-origin: 150px 310px; }}
+        #bubble-bam {{ transform-origin: {bam_conf['cx']}px {bam_conf['cy']}px; }}
+        #bubble-baania {{ transform-origin: {baa_conf['cx']}px {baa_conf['cy']}px; }}
+        #bubble-living {{ transform-origin: {liv_conf['cx']}px {liv_conf['cy']}px; }}
+        #bubble-zmyhome {{ transform-origin: {zmy_conf['cx']}px {zmy_conf['cy']}px; }}
         
         .bubble-group:hover {{
             transform: scale(1.05);
