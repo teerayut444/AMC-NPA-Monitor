@@ -28,6 +28,37 @@ def run_git_command(args):
 def main():
     print("[System] เริ่มต้นระบบอัปโหลดไฟล์ขึ้น GitHub (เหมือนโครงการ BAM NPA / Baania)...")
     
+    # Copy latest data files from sibling directories to local data/ folder
+    import shutil
+    print("[System] กำลังดึงไฟล์ข้อมูลล่าสุดจากโฟลเดอร์รันบอท (Sibling Directories)...")
+    extensions_dir = Path(__file__).resolve().parent.parent
+    local_data_dir = Path(__file__).resolve().parent / "data"
+    
+    if not local_data_dir.exists():
+        local_data_dir.mkdir(parents=True, exist_ok=True)
+        
+    mappings = {
+        "BAM NPA/BAM NPA.xlsx": "BAM NPA.xlsx",
+        "Baania NPA/baania_listings.xlsx": "baania_listings.xlsx",
+        "Livinginsider NPA/Livinginsider NPA.xlsx": "Livinginsider NPA.xlsx",
+        "ZmyHome NPA/ZmyHome NPA.xlsx": "ZmyHome NPA.xlsx"
+    }
+    
+    for relative_sib, local_name in mappings.items():
+        sib_path = extensions_dir / relative_sib
+        local_path = local_data_dir / local_name
+        
+        if sib_path.exists():
+            try:
+                shutil.copy2(sib_path, local_path)
+                print(f"  [Copy] คัดลอกสำเร็จ: {relative_sib} -> data/{local_name}")
+            except Exception as e:
+                print(f"  [Error] ไม่สามารถคัดลอก {relative_sib}: {e}")
+        else:
+            print(f"  [Warning] ไม่พบไฟล์ล่าสุดที่: {sib_path}")
+            
+    print("[System] ดึงข้อมูลล่าสุดเสร็จสิ้น ดำเนินการขั้นตอน Git ลำดับถัดไป...\n")
+
     # 1. Initialize git if not already done
     if not Path(".git").exists():
         print("[Git] ไม่พบโฟลเดอร์ .git กำลังเริ่มต้นระบบ Git Local...")
