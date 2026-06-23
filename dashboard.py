@@ -190,14 +190,69 @@ st.markdown("""
         padding-left: 10px;
     }
     
-    /* High contrast input and select fields to prevent blending into white backgrounds */
-    .stTextInput input, div[data-testid="stTextInput"] input,
-    .stNumberInput input, div[data-testid="stNumberInput"] input,
-    .stSelectbox div[data-baseweb="select"], div[data-testid="stSelectbox"] div[data-baseweb="select"] {
-        background-color: #f8fafc !important;
-        border: 1px solid #cbd5e1 !important;
-        color: #0f172a !important;
+    /* High contrast input, select, and text area fields to prevent blending */
+    div[data-testid="stTextInput"] div[data-baseweb="input"],
+    div[data-testid="stNumberInput"] div[data-baseweb="input"],
+    div[data-testid="stTextArea"] div[data-baseweb="textarea"],
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+    div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div,
+    div[data-testid="stDateInput"] div[data-baseweb="input"],
+    div[data-testid="stTimeInput"] div[data-baseweb="input"],
+    .stTextInput div[data-baseweb="input"],
+    .stNumberInput div[data-baseweb="input"],
+    .stSelectbox div[data-baseweb="select"] > div {
+        background-color: #ffffff !important;
+        border: 1.5px solid #94a3b8 !important; /* Darker, high contrast border (slate-400) */
         border-radius: 8px !important;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    /* Make inner input elements borderless and transparent */
+    div[data-testid="stTextInput"] input,
+    div[data-testid="stNumberInput"] input,
+    div[data-testid="stTextArea"] textarea,
+    div[data-testid="stDateInput"] input,
+    div[data-testid="stTimeInput"] input,
+    .stTextInput input,
+    .stNumberInput input {
+        background-color: transparent !important;
+        border: none !important;
+        color: #0f172a !important;
+    }
+    
+    /* Hover state for input fields */
+    div[data-testid="stTextInput"] div[data-baseweb="input"]:hover,
+    div[data-testid="stNumberInput"] div[data-baseweb="input"]:hover,
+    div[data-testid="stTextArea"] div[data-baseweb="textarea"]:hover,
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover,
+    div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div:hover,
+    div[data-testid="stDateInput"] div[data-baseweb="input"]:hover,
+    div[data-testid="stTimeInput"] div[data-baseweb="input"]:hover,
+    .stTextInput div[data-baseweb="input"]:hover,
+    .stNumberInput div[data-baseweb="input"]:hover,
+    .stSelectbox div[data-baseweb="select"] > div:hover {
+        border-color: #475569 !important;
+    }
+    
+    /* Focus state for input fields */
+    div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within,
+    div[data-testid="stNumberInput"] div[data-baseweb="input"]:focus-within,
+    div[data-testid="stTextArea"] div[data-baseweb="textarea"]:focus-within,
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:focus-within,
+    div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div:focus-within,
+    div[data-testid="stDateInput"] div[data-baseweb="input"]:focus-within,
+    div[data-testid="stTimeInput"] div[data-baseweb="input"]:focus-within,
+    .stTextInput div[data-baseweb="input"]:focus-within,
+    .stNumberInput div[data-baseweb="input"]:focus-within,
+    .stSelectbox div[data-baseweb="select"] > div:focus-within {
+        border-color: #4f46e5 !important;
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.25) !important;
+    }
+    
+    /* Input placeholder styling for readability */
+    ::placeholder {
+        color: #64748b !important;
+        opacity: 0.8 !important;
     }
     
     div[data-baseweb="select"] * {
@@ -205,18 +260,25 @@ st.markdown("""
         font-weight: 500 !important;
     }
     
+    /* High contrast popover dropdown options */
     div[data-baseweb="popover"] {
         background-color: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #cbd5e1 !important;
         border-radius: 8px !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
     }
     div[data-baseweb="popover"] li {
         color: #0f172a !important;
         background-color: transparent !important;
     }
+    div[data-baseweb="popover"] li * {
+        color: #0f172a !important;
+    }
     div[data-baseweb="popover"] li:hover {
         background-color: #f1f5f9 !important;
-        color: #0f172a !important;
+    }
+    div[data-baseweb="popover"] li:hover * {
+        color: #4f46e5 !important;
     }
 </style>
 """, unsafe_allow_html=True)
