@@ -437,6 +437,9 @@ baania_total_desc = f"{baania_web_total:,}+" if baania_web_total == 10000 else f
 
 # File modifications
 file_time_bam = get_file_mod_time(bam_dir / "BAM NPA.xlsx")
+file_time_baania = get_file_mod_time(baania_dir / "baania_listings.xlsx")
+file_time_living = get_file_mod_time(living_dir / "Livinginsider NPA.xlsx")
+file_time_zmyhome = get_file_mod_time(zmyhome_dir / "ZmyHome NPA.xlsx")
 # Helper to calculate distance between coordinates (Haversine formula)
 def haversine_distance(lat1, lon1, lat2, lon2):
     r = 6371.0  # Earth radius in kilometers
