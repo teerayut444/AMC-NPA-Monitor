@@ -189,6 +189,35 @@ st.markdown("""
         border-left: 5px solid #4f46e5;
         padding-left: 10px;
     }
+    
+    /* High contrast input and select fields to prevent blending into white backgrounds */
+    .stTextInput input, div[data-testid="stTextInput"] input,
+    .stNumberInput input, div[data-testid="stNumberInput"] input,
+    .stSelectbox div[data-baseweb="select"], div[data-testid="stSelectbox"] div[data-baseweb="select"] {
+        background-color: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        border-radius: 8px !important;
+    }
+    
+    div[data-baseweb="select"] * {
+        color: #0f172a !important;
+        font-weight: 500 !important;
+    }
+    
+    div[data-baseweb="popover"] {
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+    }
+    div[data-baseweb="popover"] li {
+        color: #0f172a !important;
+        background-color: transparent !important;
+    }
+    div[data-baseweb="popover"] li:hover {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
