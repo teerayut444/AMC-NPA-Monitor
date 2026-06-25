@@ -288,19 +288,19 @@ extensions_dir = Path(__file__).resolve().parent.parent
 local_data_dir = Path(__file__).resolve().parent / "data"
 
 bam_dir = extensions_dir / "BAM NPA"
-if not (bam_dir / "BAM NPA.xlsx").exists() and local_data_dir.exists():
+if (not (bam_dir / "BAM NPA.xlsx").exists() or (bam_dir / "BAM NPA.xlsx").stat().st_size == 0) and local_data_dir.exists():
     bam_dir = local_data_dir
 
 baania_dir = extensions_dir / "Baania NPA"
-if not (baania_dir / "baania_listings.xlsx").exists() and local_data_dir.exists():
+if (not (baania_dir / "baania_listings.xlsx").exists() or (baania_dir / "baania_listings.xlsx").stat().st_size == 0) and local_data_dir.exists():
     baania_dir = local_data_dir
 
 living_dir = extensions_dir / "Livinginsider NPA"
-if not (living_dir / "Livinginsider NPA.xlsx").exists() and local_data_dir.exists():
+if (not (living_dir / "Livinginsider NPA.xlsx").exists() or (living_dir / "Livinginsider NPA.xlsx").stat().st_size == 0) and local_data_dir.exists():
     living_dir = local_data_dir
 
 zmyhome_dir = extensions_dir / "ZmyHome NPA"
-if not (zmyhome_dir / "ZmyHome NPA.xlsx").exists() and local_data_dir.exists():
+if (not (zmyhome_dir / "ZmyHome NPA.xlsx").exists() or (zmyhome_dir / "ZmyHome NPA.xlsx").stat().st_size == 0) and local_data_dir.exists():
     zmyhome_dir = local_data_dir
 
 # Price Formatter helper
@@ -406,7 +406,15 @@ def load_bam_data():
         try:
             df = pd.read_excel(path)
         except Exception:
-            pass
+            if bam_dir != local_data_dir:
+                fallback_path = local_data_dir / "BAM NPA.xlsx"
+                try:
+                    df = read_excel_file_cached(fallback_path, engine='openpyxl')
+                except Exception:
+                    try:
+                        df = pd.read_excel(fallback_path)
+                    except Exception:
+                        pass
             
     if df is not None:
         try:
@@ -428,7 +436,15 @@ def load_baania_data():
         try:
             df = pd.read_excel(path)
         except Exception:
-            pass
+            if baania_dir != local_data_dir:
+                fallback_path = local_data_dir / "baania_listings.xlsx"
+                try:
+                    df = read_excel_file_cached(fallback_path, engine='openpyxl')
+                except Exception:
+                    try:
+                        df = pd.read_excel(fallback_path)
+                    except Exception:
+                        pass
             
     if df is not None:
         try:
@@ -450,7 +466,15 @@ def load_living_data():
         try:
             df = pd.read_excel(path)
         except Exception:
-            pass
+            if living_dir != local_data_dir:
+                fallback_path = local_data_dir / "Livinginsider NPA.xlsx"
+                try:
+                    df = read_excel_file_cached(fallback_path, engine='openpyxl')
+                except Exception:
+                    try:
+                        df = pd.read_excel(fallback_path)
+                    except Exception:
+                        pass
             
     if df is not None:
         try:
@@ -472,11 +496,18 @@ def load_zmyhome_data():
         try:
             df = pd.read_excel(path)
         except Exception:
-            pass
+            if zmyhome_dir != local_data_dir:
+                fallback_path = local_data_dir / "ZmyHome NPA.xlsx"
+                try:
+                    df = read_excel_file_cached(fallback_path, engine='openpyxl')
+                except Exception:
+                    try:
+                        df = pd.read_excel(fallback_path)
+                    except Exception:
+                        pass
             
     if df is not None:
         try:
-            # Map column 'ประเภท' to 'ประเภททรัพย์'
             if 'ประเภท' in df.columns:
                 df['ประเภททรัพย์'] = df['ประเภท'].fillna('อื่นๆ').astype(str).str.strip()
             else:
