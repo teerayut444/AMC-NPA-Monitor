@@ -438,7 +438,12 @@ def load_baania_data():
         try:
             df['ประเภททรัพย์'] = df['ประเภททรัพย์'].fillna('อื่นๆ').astype(str).str.strip()
             df['จังหวัด'] = df['จังหวัด'].fillna('ไม่ระบุ').astype(str).str.strip()
-            df['ราคาเริ่มต้น'] = pd.to_numeric(df['ราคาเริ่มต้น'], errors='coerce').fillna(0)
+            # Support both old column 'ราคาเริ่มต้น' and new column 'ราคา'
+            price_col = 'ราคาเริ่มต้น' if 'ราคาเริ่มต้น' in df.columns else ('ราคา' if 'ราคา' in df.columns else None)
+            if price_col:
+                df['ราคาเริ่มต้น'] = pd.to_numeric(df[price_col], errors='coerce').fillna(0)
+            else:
+                df['ราคาเริ่มต้น'] = 0
             st.session_state.df_baania = df
             return df
         except Exception:
@@ -550,6 +555,41 @@ file_time_bam = get_file_mod_time(bam_dir / "BAM NPA.xlsx")
 file_time_baania = get_file_mod_time(baania_dir / "baania_listings.xlsx")
 file_time_living = get_file_mod_time(living_dir / "Livinginsider NPA.xlsx")
 file_time_zmyhome = get_file_mod_time(zmyhome_dir / "ZmyHome NPA.xlsx")
+# Helper to parse multilingual dict-like strings (e.g. Baania titles/links)
+def parse_multilingual_text(val):
+    if pd.isna(val):
+        return ""
+    val_str = str(val).strip()
+    if val_str.startswith("{") and val_str.endswith("}"):
+        try:
+            import ast
+            d = ast.literal_eval(val_str)
+            if isinstance(d, dict):
+                return d.get('th', d.get('th_TH', d.get('en', val_str)))
+        except Exception:
+            pass
+    return val_str
+
+# Helper to parse Baania URL from dict-like string
+def parse_baania_url(val):
+    if pd.isna(val):
+        return "#"
+    val_str = str(val).strip()
+    if val_str.startswith("{") and val_str.endswith("}"):
+        try:
+            import ast
+            d = ast.literal_eval(val_str)
+            if isinstance(d, dict):
+                if 'alias_th' in d and d['alias_th']:
+                    return f"https://www.baania.com/th/{d['alias_th']}"
+                elif 'source_url' in d and d['source_url']:
+                    return f"https://www.baania.com/th/{d['source_url']}"
+        except Exception:
+            pass
+    if val_str.startswith("http"):
+        return val_str
+    return f"https://www.baania.com/th/listing/{val_str}" if val_str != "#" else "#"
+
 # Helper to calculate distance between coordinates (Haversine formula)
 def haversine_distance(lat1, lon1, lat2, lon2):
     r = 6371.0  # Earth radius in kilometers
@@ -571,9 +611,17 @@ def haversine_distance(lat1, lon1, lat2, lon2):
 def prepare_comparison_dataset():
     dfs = []
     
-    # helper for columns mapping
+    # helper for columns mapping that ignores entirely null columns (like ZmyHome ID)
     def get_column_data(df, candidates, default_val=None, is_numeric=False):
-        col = next((c for c in candidates if c in df.columns), None)
+        col = None
+        for c in candidates:
+            if c in df.columns:
+                if not df[c].isna().all():
+                    col = c
+                    break
+        if col is None:
+            col = next((c for c in candidates if c in df.columns), None)
+            
         if col is not None:
             if is_numeric:
                 return pd.to_numeric(df[col], errors='coerce').fillna(default_val if default_val is not None else 0)
@@ -647,6 +695,21 @@ def prepare_comparison_dataset():
         
     if not dfs:
         return pd.DataFrame()
+        
+    # Clean text values & parse urls in each dataframe before merging
+    for df_item in dfs:
+        df_item['project_name'] = df_item['project_name'].apply(parse_multilingual_text)
+        df_item['province'] = df_item['province'].apply(parse_multilingual_text)
+        df_item['district'] = df_item['district'].apply(parse_multilingual_text)
+        df_item['subdistrict'] = df_item['subdistrict'].apply(parse_multilingual_text)
+        
+        if df_item.empty:
+            continue
+            
+        if df_item['source'].iloc[0] == 'Baania NPA':
+            df_item['url'] = df_item['url'].apply(parse_baania_url)
+        else:
+            df_item['url'] = df_item['url'].apply(lambda x: str(x).strip())
         
     master_df = pd.concat(dfs, ignore_index=True)
     # Filter rows with valid coordinates
