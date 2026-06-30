@@ -107,18 +107,6 @@ if not st.session_state.logged_in:
         st.markdown('<h1 class="login-title">🔐 AMC NPA Monitor</h1>', unsafe_allow_html=True)
         st.markdown('<p class="login-subtitle">ระบบวิเคราะห์และเฝ้าติดตามทรัพย์สินรอการขาย</p>', unsafe_allow_html=True)
         
-        # Calculate local Thailand time
-        utc_now = datetime.datetime.utcnow()
-        local_now = utc_now + datetime.timedelta(hours=7)
-        local_date_str = local_now.strftime("%d/%m/%Y")
-        
-        st.markdown(f"""
-        <div class="login-info">
-            📅 <b>เวลาปัจจุบัน (ประเทศไทย):</b> {local_date_str}<br>
-            💡 <b>คำใบ้รหัสผ่าน:</b> วันที่ในอีก 7 วันข้างหน้า (วันที่ปัจจุบัน + 7 วัน)
-        </div>
-        """, unsafe_allow_html=True)
-        
         with st.form("login_form", clear_on_submit=False):
             passwd = st.text_input("รหัสผ่าน (Password):", type="password")
             submit = st.form_submit_button("เข้าสู่ระบบ (Login)", use_container_width=True)
@@ -133,7 +121,7 @@ if not st.session_state.logged_in:
                     except AttributeError:
                         st.experimental_rerun()
                 else:
-                    st.error("รหัสผ่านไม่ถูกต้อง กรุณาคำนวณและลองใหม่อีกครั้ง")
+                    st.error("รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง")
         st.markdown('</div>', unsafe_allow_html=True)
         st.stop()
 
