@@ -18,6 +18,125 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# --- LOGIN SYSTEM SYSTEM STATE & LOGIC ---
+import datetime
+
+# Helper to calculate expected passwords based on date + 7 days
+def get_allowed_passwords():
+    # Streamlit Cloud servers run in UTC, so we offset to Thailand timezone (UTC+7)
+    utc_now = datetime.datetime.utcnow()
+    local_now = utc_now + datetime.timedelta(hours=7)
+    
+    # 1. Day number of today + 7 directly (e.g. 30 + 7 = 37)
+    val1 = str(local_now.day + 7)
+    
+    # 2. Date in 7 days
+    target_date = local_now + datetime.timedelta(days=7)
+    day_str = target_date.strftime("%d") # e.g. "07"
+    day_str_clean = str(int(day_str)) # e.g. "7"
+    month_str = target_date.strftime("%m") # e.g. "07"
+    year_ce = target_date.year # e.g. 2026
+    year_be = year_ce + 543 # e.g. 2569
+    
+    allowed = [
+        val1,
+        day_str,
+        day_str_clean,
+        f"{day_str}{month_str}{year_ce}", # e.g. "07072026"
+        f"{day_str}{month_str}{str(year_ce)[2:]}", # e.g. "070726"
+        f"{day_str}{month_str}{year_be}", # e.g. "07072569"
+        f"{day_str}/{month_str}/{year_ce}", # e.g. "07/07/2026"
+        f"{day_str}/{month_str}/{str(year_ce)[2:]}", # e.g. "07/07/26"
+        f"{day_str}/{month_str}/{year_be}" # e.g. "07/07/2569"
+    ]
+    return allowed
+
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+
+if not st.session_state.logged_in:
+    # Set custom CSS styles for the login form card
+    st.markdown("""
+    <style>
+        .login-card {
+            max-width: 480px;
+            margin: 60px auto;
+            padding: 40px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            font-family: 'Outfit', 'Sarabun', sans-serif;
+        }
+        .login-title {
+            font-weight: 800;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #4f46e5 0%, #0d9488 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .login-subtitle {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+        .login-info {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 0.85rem;
+            text-align: left;
+            line-height: 1.5;
+        }
+        /* Custom styles for Streamlit login button to look premium */
+        div[data-testid="stForm"] {
+            border: none !important;
+            padding: 0 !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    col_l1, col_l2, col_l3 = st.columns([1, 1.8, 1])
+    with col_l2:
+        st.markdown('<div class="login-card">', unsafe_allow_html=True)
+        st.markdown('<h1 class="login-title">🔐 AMC NPA Monitor</h1>', unsafe_allow_html=True)
+        st.markdown('<p class="login-subtitle">ระบบวิเคราะห์และเฝ้าติดตามทรัพย์สินรอการขาย</p>', unsafe_allow_html=True)
+        
+        # Calculate local Thailand time
+        utc_now = datetime.datetime.utcnow()
+        local_now = utc_now + datetime.timedelta(hours=7)
+        local_date_str = local_now.strftime("%d/%m/%Y")
+        
+        st.markdown(f"""
+        <div class="login-info">
+            📅 <b>เวลาปัจจุบัน (ประเทศไทย):</b> {local_date_str}<br>
+            💡 <b>คำใบ้รหัสผ่าน:</b> วันที่ในอีก 7 วันข้างหน้า (วันที่ปัจจุบัน + 7 วัน)
+        </div>
+        """, unsafe_allow_html=True)
+        
+        with st.form("login_form", clear_on_submit=False):
+            passwd = st.text_input("รหัสผ่าน (Password):", type="password")
+            submit = st.form_submit_button("เข้าสู่ระบบ (Login)", use_container_width=True)
+            
+            if submit:
+                allowed_passwords = get_allowed_passwords()
+                if passwd.strip() in allowed_passwords:
+                    st.session_state.logged_in = True
+                    st.success("เข้าสู่ระบบสำเร็จ!")
+                    try:
+                        st.rerun()
+                    except AttributeError:
+                        st.experimental_rerun()
+                else:
+                    st.error("รหัสผ่านไม่ถูกต้อง กรุณาคำนวณและลองใหม่อีกครั้ง")
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.stop()
+
 # Initialize session state for cached dataframes
 if 'df_bam' not in st.session_state:
     st.session_state.df_bam = None
