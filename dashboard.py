@@ -8,7 +8,7 @@ import os
 import re
 import requests
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Set Streamlit Page Configuration
 st.set_page_config(
@@ -19,19 +19,18 @@ st.set_page_config(
 )
 
 # --- LOGIN SYSTEM SYSTEM STATE & LOGIC ---
-import datetime
 
 # Helper to calculate expected passwords based on date + 7 days
 def get_allowed_passwords():
     # Streamlit Cloud servers run in UTC, so we offset to Thailand timezone (UTC+7)
-    utc_now = datetime.datetime.utcnow()
-    local_now = utc_now + datetime.timedelta(hours=7)
+    utc_now = datetime.utcnow()
+    local_now = utc_now + timedelta(hours=7)
     
     # 1. Day number of today + 7 directly (e.g. 30 + 7 = 37)
     val1 = str(local_now.day + 7)
     
     # 2. Date in 7 days
-    target_date = local_now + datetime.timedelta(days=7)
+    target_date = local_now + timedelta(days=7)
     day_str = target_date.strftime("%d") # e.g. "07"
     day_str_clean = str(int(day_str)) # e.g. "7"
     month_str = target_date.strftime("%m") # e.g. "07"
